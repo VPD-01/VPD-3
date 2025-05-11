@@ -1,0 +1,35 @@
+from ev3dev2.motor import OUTPUT_A, LargeMotor
+import time
+
+motor = LargeMotor(OUTPUT_A)
+current_pose = motor.position
+start_pose = motor.position
+purpose = 90 + current_pose
+current_time = time.time()
+start_time = time.time()
+delta_times = []
+file = open('part_12.txt', 'w')
+
+while time.time() - start_time < 13:
+    file.write(str(current_pose-start_pose) + " " + str(time.time()-start_time) + "\n")
+
+    if purpose > current_pose:
+        motor.run_direct(duty_cycle_sp=50)
+    elif purpose < current_pose:
+        motor.run_direct(duty_cycle_sp=-50)
+    else:
+        motor.run_direct(duty_cycle_sp=0)
+
+    delta_times.append(time.time() - current_time)
+    current_time = time.time()
+    current_pose = motor.position
+else:
+    motor.run_direct(duty_cycle_sp=0)
+
+file.write(str(current_pose))
+file.close()
+
+file = open('Delta_time.txt', 'w')
+delta_time = (sum(delta_times) / len(delta_times))
+file.write(str(delta_time))
+file.close()
