@@ -1,0 +1,43 @@
+from ev3dev2.motor import OUTPUT_A, LargeMotor
+import time
+
+motor = LargeMotor(OUTPUT_A)
+k_p = 0.27
+k_i = float(input("Input k_i: "))
+current_pose = motor.position
+purpose = 90 + current_pose
+current_time = time.time()
+start_time = time.time()
+start_pose = motor.position
+e_t = []
+e_up = 0
+filename = "part_4.txt"
+file = open(filename, 'w')
+integral_sum = 0
+try:
+    while time.time() - start_time < 13:
+        file.write(str(current_pose - start_pose) + " " + str(time.time() - start_time) + "\n")
+
+        e_t.append([purpose - current_pose, current_time])
+        if len(e_t) > 1:
+            dt = e_t[-1][1] - e_t[-2][1]
+            integral_sum += e_t[-2][0] * dt + 0.5 * (e_t[-1][0] - e_t[-2][0]) * dt
+
+        current_U = k_p * (purpose - current_pose) + k_i * integral_sum
+
+        if current_U > 100:
+            current_U = 100
+        if current_U < -100:
+            current_U = -100
+
+        motor.run_direct(duty_cycle_sp=current_U)
+        current_time = time.time()
+        current_pose = motor.position
+    else:
+        motor.run_direct(duty_cycle_sp = 0)
+
+    file.write(str(current_pose - start_pose) + " " + str(time.time() - start_time) + "\n")
+    file.close()
+
+except KeyboardInterrupt:
+    motor.run_direct(duty_cycle_sp = 0)
