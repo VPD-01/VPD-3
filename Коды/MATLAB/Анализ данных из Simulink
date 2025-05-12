@@ -1,0 +1,26 @@
+data = readmatrix('relay100.txt');
+t = data(:,2);           % Время
+theta = data(:,1);       % Угол (в градусах)
+
+%Запуск модели Simulink
+out = sim('Relay.slx');
+theta_sim = out.theta;
+time_sim = theta_sim.time;
+data_sim_rad = theta_sim.signals.values;  
+
+data_sim_deg = rad2deg(data_sim_rad);
+
+
+% Построение графиков
+figure;
+plot(t, theta, 'b', 'LineWidth', 1, 'DisplayName', 'Эксперимент'); 
+hold on;
+plot(time_sim, data_sim_deg, 'r', 'LineWidth', 1, 'DisplayName', 'Модель');
+yline(90, 'k--', 'LineWidth', 1, 'DisplayName', 'Целевой угол 90°');
+
+% Подписи и оформление
+xlabel('Время (с)');
+ylabel('Угол (градусы)');
+title('Сравнение: эксперимент и модель');
+legend('Location', 'best');
+grid on;
