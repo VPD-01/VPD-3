@@ -1,0 +1,11 @@
+data = readmatrix('mototr_data.csv')
+t = data(:,1);
+theta = data(:,2);
+
+plot(t, theta, 'LineWidth', 2);
+xlabel('Time (s)');
+ylabel('Angle (degrees)');
+title('Motor Angle vs. Time');
+grid on;
+yline(90, '--r', 'Target');
+legend('Measured Angle', 'Target');
