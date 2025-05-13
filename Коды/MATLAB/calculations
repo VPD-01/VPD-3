@@ -1,0 +1,40 @@
+data = readmatrix('mototr_data.csv')
+t = data(:,1);
+theta = data(:,2);
+
+theta_target = 90;
+
+% Установившееся значение — среднее значение на последнем участке графика
+steady_state_range = t > (t(end) - 1);  % последняя секунда
+theta_steady = mean(theta(steady_state_range));
+
+% Установившаяся ошибка
+e_lns = abs(theta_target - theta_steady);  % e_уст
+
+% Перерегулирование 
+theta_max = max(theta);
+if theta_max > theta_target
+    overshoot = (theta_max - theta_steady) / theta_steady;  % σ
+else
+    overshoot = 0;
+end
+
+% Время переходного процесса (время, после которого сигнал остается в пределах ±5% от установившегося значения)
+delta = 0.05 * theta_steady;
+idx_settled = find(abs(theta - theta_steady) <= delta);
+if ~isempty(idx_settled)
+    % Найдём первый индекс, после которого система остаётся в пределах ±5%
+    for i = 1:length(idx_settled)
+        if all(abs(theta(idx_settled(i):end) - theta_steady) <= delta)
+            t_settling = t(idx_settled(i));  % t_пп
+            break;
+        end
+    end
+else
+    t_settling = NaN;  % если не удалось найти
+end
+
+% Вывод результатов
+fprintf('Установившаяся ошибка: %.2f град\n', e_lns);
+fprintf('Перерегулирование: %.2f%%\n', overshoot * 100);
+fprintf('Время переходного процесса: %.2f сек\n', t_settling);
